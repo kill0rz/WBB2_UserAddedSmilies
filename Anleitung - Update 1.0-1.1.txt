@@ -1,0 +1,126 @@
+UserAddedSmilies v1.2 by kill0rz (C) 2014 - visit kill0rz.com
+
+Copyright
+#########
+
+Dieser Hack wurde unter kill0rz Unilicence v1.0 vom 08.08.2014 veröffentlicht. Diese liegt bei.
+
+Beschreibung
+############
+
+Nach Installation des Hacks kann jeder User sich selbst Smilies hinzufügen und diese beliebig wieder löschen.
+Dabei werden keine vom Forum definierten oder vom User bereits verwendete Smilies überschrieben.
+Die hinzugefügten Smilies erscheinen ganz normal in der Smileytabelle, aber eben nur bei dem Nutzer, der sie auch hochgeladen hat!
+
+Getestet mit und geschrieben für WBB2.3.6pl2
+
+Installationszeit:
+##################
+
+10-15min
+
+Changelog
+#########
+
+v1.0 (01.01.2014)
+----
+Grundskript
+
+v1.1 (08.05.2014)
+----
+- benutzt relative statt absolute Links
+- Fix: Smilies werden in Vorschau und Beiträgen, sowie PNs nicht angezeigt (Vielen Dank an Viktor von v-gn.de ! (: )
+- Fix: falsche Verlinkung im Usercp
+
+v1.2 (28.11.2014)
+----
+- Fix: Probleme mit forenweiten Smilies, beginnend mit einem Doppelpunkt
+
+Update von Version 1.0 auf 1.1
+##############################
+
+Datei: acp/lib/functions.php
+====== ---------------------
+
+#######
+suche:#
+#######
+
+$post = str_replace(trim($row['smiliecode']),"[img]".str_replace("<br/>","",trim($row['smiliepath']))."[/img]",$post);
+
+
+#############
+ersetze mit:#
+#############
+
+$post = str_replace(trim($row['smiliecode']),"[img]".str_replace("<br />","",trim($row['smiliepath']))."[/img]",$post);
+
+
+
+Template: usercp
+========= ------
+
+#######
+suche:#
+#######
+
+
+<a href="vgprofil_gal.php{$SID_ARG_1ST}"><img src="{$style['imagefolder']}/usercp_avatars.gif" border="0" alt="useraddedsmilies" title="useraddedsmilies" /></a><br />
+
+#############
+ersetze mit:#
+#############
+
+
+<a href="?action=useraddedsmilies"><img src="{$style['imagefolder']}/usercp_avatars.gif" border="0" alt="useraddedsmilies" title="useraddedsmilies" /></a><br />
+
+Datei: acp/lib/class_parse.php
+====== -----------------------
+
+####################
+suche und entferne:#
+####################
+
+
+//UserAddedSmileys v1 by kill0rz
+$post = parseUSERADDEDSMILIES($post);
+
+#######
+suche:#
+#######
+
+
+		// wrap text
+		$post = $this->textwrap($post);
+		
+		
+###################
+Füge darunter ein:#
+###################
+
+
+		if ($allowsmilies == 1) {
+                     //UserAddedSmileys v1 by kill0rz
+                     $post = parseUSERADDEDSMILIES($post);
+		}
+		
+		
+Datei: usercp.php
+====== ----------
+
+#######
+suche:#
+#######
+
+$smiliepath  = $url2board."/images/smilies/useraddedsmilies/".$wbbuserdata['userid']."/".$DateiName;
+
+#############
+ersetze mit:#
+#############
+
+$smiliepath  = "./images/smilies/useraddedsmilies/".$wbbuserdata['userid']."/".$DateiName;
+
+
+		
+Fertig! :)
+Stand: 08.05.2014

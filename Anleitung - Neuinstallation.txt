@@ -1,0 +1,314 @@
+UserAddedSmilies v1.2 by kill0rz (C) 2014 - visit kill0rz.com
+
+Copyright
+#########
+
+Dieser Hack wurde unter kill0rz Unilicence v1.0 vom 08.08.2014 veröffentlicht. Diese liegt bei.
+
+Beschreibung
+############
+
+Nach Installation des Hacks kann jeder User sich selbst Smilies hinzufügen und diese beliebig wieder löschen.
+Dabei werden keine vom Forum definierten oder vom User bereits verwendete Smilies überschrieben.
+Die hinzugefügten Smilies erscheinen ganz normal in der Smileytabelle, aber eben nur bei dem Nutzer, der sie auch hochgeladen hat!
+
+Getestet mit und geschrieben für WBB2.3.6pl2
+
+Installationszeit:
+##################
+
+10-15min
+
+Changelog
+#########
+
+v1.0 (01.01.2014)
+----
+Grundskript
+
+v1.1 (08.05.2014)
+----
+- benutzt relative statt absolute Links
+- Fix: Smilies werden in Vorschau und Beiträgen, sowie PNs nicht angezeigt (Vielen Dank an Viktor von v-gn.de ! (: )
+- Fix: falsche Verlinkung im Usercp
+
+v1.2 (28.11.2014)
+----
+- Fix: Probleme mit forenweiten Smilies, beginnend mit einem Doppelpunkt
+
+Installtion
+###########
+
+Führe folgenden SQL-Befehl aus (entweder ACP oder phpmyadmin):
+
+CREATE TABLE IF NOT EXISTS `bb1_useraddedsmilies` (
+  `smilieid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `userid` varchar(250) NOT NULL DEFAULT '',
+  `smiliepath` varchar(250) NOT NULL DEFAULT '',
+  `smilietitle` varchar(250) NOT NULL DEFAULT '',
+  `smiliecode` varchar(250) NOT NULL DEFAULT '',
+  PRIMARY KEY (`smilieid`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+Lade die alle Dateien in der Struktur von wbb2/ in deinen Forenordner.
+Zur Sicherheit Templates exportieren.
+Importiere das Template --> cachen --> nur neue Templates cachen
+
+Datei: misc.php
+====== --------
+
+#######
+Suche:#
+#######
+
+		else $rightorleft = 'left';
+	}
+
+
+###################
+Füge darunter ein:#
+###################
+
+	//UserAddedSmileys v1 by kill0rz
+	$result2 = $db->unbuffered_query("SELECT smiliepath, smiliecode, userid FROM bb".$n."_useraddedsmilies ORDER BY userid ASC");
+	while ($row = $db->fetch_array($result2)) {
+		if($row['userid'] == $wbbuserdata['userid']){
+			$row['smilietitle'] = '';
+			$row['smiliename'] 	= htmlconverter($row['smiliecode']);
+			$row['smiliecode']	= addcslashes($row['smiliecode'], "'\\");
+			$row['smiliepath'] 	= replaceImagefolder($row['smiliepath']);
+			
+			eval("\$popup_smiliesbits .= \"".$tpl->get("popup_smiliesbits")."\";");
+					
+			if ($rightorleft == 'left') {
+				$j++;
+				$rightorleft = 'right';
+			}
+			else $rightorleft = 'left';
+		}
+	}
+
+
+Datei: usercp.php
+====== ----------
+
+#######
+Suche:#
+#######
+
+?>
+
+###################
+Füge darüber ein:#
+###################
+
+/** Useraddedsmilies by kill0rz **/
+
+function makeindex($pfad){
+	$datei = fopen($pfad."index.php","w");
+	fwrite($datei,"");
+	fclose($datei);
+}
+
+if ($action == 'useraddedsmilies') {
+	$ersetzen = array( 'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss', ' ' => '_', '\\' => '-', '/' => '-', "http://" => "", "http" => "", "//" => "", ":" => "" );
+	$wegarray = "<,>,%3E,alert(,http://,ftp://,sftp://,https://,http%3A%2F%2,https%3A%2F%2,ftp%3A%2F%2,sftp%3A%2F%2,String.fromCharCode,(,),',".'",;,<?,<?php,?>,$,/,§,(,),],[,img,url,:';
+	$wegarray = explode(',',$wegarray);
+	
+	###Form 1
+	$error = '';
+	
+	if(isset($_POST['formsent']) and trim($_POST['formsent']) == '1'){
+	
+		if(!isset($_POST['title']) or trim($_POST['title']) == ''){
+			$error .= "<font color='red'>Fehler:</font> Keinen Smileytitel angegeben!<br>";
+		}else{
+			$smilietitle = str_replace($wegarray,"",trim($_POST['title']));
+			if(trim($smilietitle) == ''){
+				$error .= "<font color='red'>Fehler:</font> Dein Smileycode ist nicht gültig!<br>";
+			}
+		}
+		if(!isset($_POST['code']) or trim($_POST['code']) == ''){
+			$error .= "<font color='red'>Fehler:</font> Smileycode nicht gültig!<br>";
+		}else{
+			$smiliecode = "uas:".str_replace($wegarray,"",trim($_POST['code']));
+			//Prüfen, ob Hauptsmiley schon existiert			
+			$result2 = $db->unbuffered_query("SELECT smiliecode FROM bb".$n."_smilies");
+			while ($row = $db->fetch_array($result2)) {
+				if(trim($row['smiliecode']) == trim($_POST['code'])){
+					$error .= "<font color='red'>Fehler:</font> Smileycode existiert bereits forenweit!<br>";
+				}
+			}
+			
+			//Prüfen, ob Usersmiley schon existiert			
+			$result2 = $db->unbuffered_query("SELECT smiliecode FROM bb".$n."_useraddedsmilies");
+			while ($row = $db->fetch_array($result2)) {
+				if(trim($row['smiliecode']) == trim($_POST['code']) or ":".trim($row['smiliecode']) == trim($_POST['code'])){
+					$error .= "<font color='red'>Fehler:</font> Smileycode existiert bereits bei dir!<br>";
+				}
+			}
+		}
+		
+		if(!(isset($_FILES['smiley']) and $_FILES['smiley']['size'] > 0 and substr( strtolower( $_FILES['smiley']['name'] ), -5 ) == '.jpeg' || substr( strtolower( $_FILES['smiley']['name'] ), -4 ) == '.jpg' || substr( strtolower( $_FILES['smiley']['name'] ), -4 ) == '.gif' || substr( strtolower( $_FILES['smiley']['name'] ), -4 ) == '.bmp' || substr( strtolower( $_FILES['smiley']['name'] ), -4 ) == '.png')){
+			$error .= "<font color='red'>Fehler:</font> ungültige Datei oder ungültiges Dateiformat!<br>";
+		}
+		
+		if($error == ''){
+			$erfolg = true;
+			//Erstmal alle Ordner checken		
+			if(!is_dir("./images/smilies/useraddedsmilies"."/")){
+				mkdir("./images/smilies/useraddedsmilies"."/", 0777);
+				makeindex("./images/smilies/useraddedsmilies"."/");
+			}
+			
+			if(!is_dir("./images/smilies/useraddedsmilies"."/".$wbbuserdata['userid'])){
+				mkdir("./images/smilies/useraddedsmilies"."/".$wbbuserdata['userid'], 0777);
+				makeindex("./images/smilies/useraddedsmilies"."/".$wbbuserdata['userid']."/");
+			}
+			
+			//Datei verschieben
+			$DateiName = strtr(strtolower($_FILES["smiley"]['name']), $ersetzen);
+			$DateiName = str_replace($wegarray,"",$DateiName);
+			if(file_exists("./images/smilies/useraddedsmilies"."/".$wbbuserdata['userid']."/".$DateiName)){
+				sleep(1);
+				$DateiName = time().$DateiName;
+			}
+			if(@move_uploaded_file($_FILES['smiley']['tmp_name'], "./images/smilies/useraddedsmilies"."/".$wbbuserdata['userid']."/".$DateiName)){
+				@chmod( $DateiName, 0777 );
+				
+				//variablen belegen
+				$smiliepath  = "./images/smilies/useraddedsmilies/".$wbbuserdata['userid']."/".$DateiName;
+								
+				//Datenbankeinträge schreiben
+				$db->query("INSERT INTO bb".$n."_useraddedsmilies (userid,smiliepath,smilietitle,smiliecode) VALUES ('".$wbbuserdata['userid']."','".$smiliepath."','".$smilietitle."','".$smiliecode."')");
+				$erg = "<font color='green'>Erfolg!</font> Du kannst den Smiley ab sofort benutzen! :) \n";
+			}else{
+				$erg .= "Fehler beim Überspielen der Datei, bitte wende dich an den Forenadministrator!<br>";
+				$erfolg = false;
+			}
+		}else{
+			$erg = $error;
+		}
+	
+	}
+	
+	###Form 2
+	
+		if(isset($_GET['del']) and trim($_GET['del']) != ''){
+			//Es wurde die Löschung eines Smileys angefordert
+			$result2 = $db->unbuffered_query("SELECT * FROM bb".$n."_useraddedsmilies");
+			while ($row = $db->fetch_array($result2)) {
+				if($row['userid'] == $wbbuserdata['userid'] and $row['smilieid'] == trim($_GET['del'])){
+					$db->unbuffered_query("DELETE FROM bb".$n."_useraddedsmilies WHERE smilieid=".trim($_GET['del']));
+					$erg3 = "<font color='green'>Erfolg!</font> Der Smiley wurde erfolgreich gelöscht!";
+				}
+			}
+		}
+		
+		$result2 = $db->unbuffered_query("SELECT * FROM bb".$n."_useraddedsmilies");
+		while ($row = $db->fetch_array($result2)) {
+			if($row['userid'] == $wbbuserdata['userid']){
+				$row['smilietitle'] = htmlconverter($row['smiliecode']);
+				$row['smiliecode']	= addcslashes($row['smiliecode'], "'\\");
+				$row['smiliepath'] 	= replaceImagefolder($row['smiliepath']);
+				$erg2 .= "<tr><th><img src='".$row['smiliepath']."' /></th>\n";
+				$erg2 .= "<th>".$row['smiliecode']."</th>\n";
+				$erg2 .= "<th>".$row[3]."</th>\n";
+				$erg2 .= "<th><a href='?action=useraddedsmilies&del=".$row['smilieid']."'><img src='images/del.gif' /></a></th></tr>\n";
+				
+			}
+		}
+	
+	eval("\$tpl->output(\"".$tpl->get("useraddedsmilies")."\");");
+}
+
+Datei: /acp/lib/functions.php
+====== ----------------------
+
+#######
+Suche:#
+#######
+
+?>
+
+
+##################
+Füge darüber ein:#
+##################
+
+function parseUSERADDEDSMILIES($post){
+		//parses the new added smilies of a user
+		//by kill0rz, last modified 17.02.2014
+		
+		//output is string
+		
+		global $db;
+		global $n;
+		
+		$result2 = $db->unbuffered_query("SELECT smilieid, smiliecode, smiliepath FROM bb".$n."_useraddedsmilies");
+		while ($row = $db->fetch_array($result2)) {
+		
+			if($wbbuserdada['userid'] == trim($row['userid'])){
+				$post = str_replace(trim($row['smiliecode']),"[img]".str_replace("<br />","",trim($row['smiliepath']))."[/img]",$post);
+			}
+		}
+		
+		return $post;
+}
+
+
+Datei: /acp/lib/class_parse.php
+====== ------------------------
+
+#######
+Suche:#
+#######
+
+		// wrap text
+		$post = $this->textwrap($post);
+
+
+###################
+Füge darunter ein:#
+###################
+
+		if ($allowsmilies == 1) {
+                     //UserAddedSmileys v1 by kill0rz
+                     $post = parseUSERADDEDSMILIES($post);
+		}
+
+Template: usercp
+========= ------
+
+#######
+Suche:# (An dieser Stelle kann die Anleitung variieren. Bitte ggf. an das vorhandene Template anpassen!)
+#######
+
+   <span class="smallfont">{$lang->items['LANG_USERCP_USERGROUPS_DESC']}</span></td>
+ </tr>
+
+
+###################
+Füge darunter ein:#
+###################
+
+ <tr align="center">
+  <td class="tablea" style="width:33%">
+     <a href="?action=useraddedsmilies"><img src="{$style['imagefolder']}/usercp_avatars.gif" border="0" alt="useraddedsmilies" title="useraddedsmilies" /></a><br />
+     <span class="normalfont"><b><a href="?action=useraddedsmilies">useraddedsmilies</a></b></span><br />
+     <span class="smallfont">Hier kannst du eigene Smilies hinzufügen</span>
+  </td>
+  <td class="tableb" style="width:33%">&nbsp;</td>
+  <td class="tablea" style="width:33%">&nbsp;</td>
+ </tr>
+
+
+FERTIG!
+Nun können du und alle User das Script benutzen!
+Alle Ordner werden vom Script angelegt, wenn sie gebraucht werden.
+
+Viel Spaß bei der Verwendung,
+kill0rz
+http://kill0rz.com/
+
+Stand: 28.11.2014
