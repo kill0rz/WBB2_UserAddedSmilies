@@ -46,15 +46,14 @@ Datei: acp/lib/functions.php
 suche:#
 #######
 
-$post = str_replace(trim($row['smiliecode']),"[img]".str_replace("<br/>","",trim($row['smiliepath']))."[/img]",$post);
+$post = str_replace(trim($row['smiliecode']), "[img]" . str_replace("<br/>", "", trim($row['smiliepath'])) . "[/img]", $post);
 
 
 #############
 ersetze mit:#
 #############
 
-$post = str_replace(trim($row['smiliecode']),"[img]".str_replace("<br />","",trim($row['smiliepath']))."[/img]",$post);
-
+$post = str_replace(trim($row['smiliecode']), "[img]" . str_replace("<br />", "", trim($row['smiliepath'])) . "[/img]", $post);
 
 
 Template: usercp
@@ -92,19 +91,18 @@ suche:#
 
 		// wrap text
 		$post = $this->textwrap($post);
-		
-		
+
+
 ###################
 Füge darunter ein:#
 ###################
 
-
 		if ($allowsmilies == 1) {
-                     //UserAddedSmileys v1 by kill0rz
-                     $post = parseUSERADDEDSMILIES($post);
+			//UserAddedSmileys v1 by kill0rz
+			$post = parseUSERADDEDSMILIES($post);
 		}
-		
-		
+
+
 Datei: usercp.php
 ====== ----------
 
@@ -112,15 +110,16 @@ Datei: usercp.php
 suche:#
 #######
 
-$smiliepath  = $url2board."/images/smilies/useraddedsmilies/".$wbbuserdata['userid']."/".$DateiName;
+$smiliepath = $url2board . "/images/smilies/useraddedsmilies/" . $wbbuserdata['userid'] . "/" . $DateiName;
+
 
 #############
 ersetze mit:#
 #############
 
-$smiliepath  = "./images/smilies/useraddedsmilies/".$wbbuserdata['userid']."/".$DateiName;
+$smiliepath = "./images/smilies/useraddedsmilies/" . $wbbuserdata['userid'] . "/" . $DateiName;
 
 
-		
+
 Fertig! :)
 Stand: 08.05.2014

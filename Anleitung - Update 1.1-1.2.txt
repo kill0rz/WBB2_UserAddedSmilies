@@ -52,8 +52,8 @@ if(trim($row['smiliecode']) == trim($_POST['code'])){
 ersetze mit:#
 #############
 
-if(trim($row['smiliecode']) == trim($_POST['code']) or ":".trim($row['smiliecode']) == trim($_POST['code'])){
+if (trim($row['smiliecode']) == trim($_POST['code']) or ":" . trim($row['smiliecode']) == trim($_POST['code'])) {
 
-		
+
 Fertig! :)
 Stand: 28.11.2014
